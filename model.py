@@ -18,8 +18,8 @@ selected_feat = 1
 #data exploration
 def read_dataset():
     global df_master
-    df_anomaly_master = pd.read_csv("CIC_IDS_2018.csv", low_memory=False)
-    df_benign_master = pd.read_csv("benign.csv", low_memory=False)
+    df_anomaly_master = pd.read_csv("https://www.kaggle.com/datasets/vickyg0609/mcafyp/CIC_IDS_2018.csv", low_memory=False)
+    df_benign_master = pd.read_csv("https://www.kaggle.com/datasets/vickyg0609/mcafyp/benign.csv", low_memory=False)
     df_master = pd.concat([df_anomaly_master, df_benign_master])
 
 def get_data_shape():
