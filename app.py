@@ -7,6 +7,10 @@ read_data = False
 preprocess_data = False
 
 @app.route("/", methods=['GET'])
+def index():
+    return "Hello world"
+    
+
 @app.route("/home", methods=['GET', "POST"])
 def home():
     global read_data
