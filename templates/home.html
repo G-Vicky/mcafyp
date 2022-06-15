@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+    <!-- CSS only -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+      crossorigin="anonymous"
+    />
+    <!-- JavaScript Bundle with Popper -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+      crossorigin="anonymous"
+    ></script>
+    <!-- google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Decision Tree Classification</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <style>
+      * {
+        font-family: "Roboto";
+      }
+      table.dataframe {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        border: none;
+        border-collapse: collapse;
+      }
+      td {
+        padding: 3px;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #ddd;
+        text-align: center;
+      }
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+      td:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      th:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <a class="navbar-brand" href="#">&ensp; ML</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="{{ url_for('home') }}"
+              >Home <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('preprocess') }}"
+              >Pre-Processing</a
+            >
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Feature Selection
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a
+                class="dropdown-item"
+                href="{{ url_for('featuresel', method_name='chi') }}"
+                >Chi-Squared</a
+              >
+              <a
+                class="dropdown-item"
+                href="{{ url_for('featuresel', method_name='pca') }}"
+                >PCA</a
+              >
+              <a
+                class="dropdown-item"
+                href="{{ url_for('featuresel', method_name='rfi') }}"
+                >RandomForestImportance</a
+              >
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Classification
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="#">Gini</a>
+              <a class="dropdown-item" href="#">Entropy</a>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Results &amp; Metrics</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Home section -->
+    <div class="container">
+      <br />
+      <div class="container text-center">
+        <div class="col">CIC-IDS-2018</div>
+        <form action="{{ url_for('home') }}" method="post">
+          <input
+            type="submit"
+            class="btn btn-outline-info"
+            value="Load Dataset"
+          />
+        </form>
+      </div>
+      {% if data %}
+      <div class="container">
+        <h1 class="text-success font-italic">Data Exploration</h1>
+        <div class="container">
+          <h3 class="text-info">Records in Dataset</h3>
+          <p>
+            Number of rows : {{data.rows}} <br />
+            Number of columns : {{data.cols}}
+          </p>
+        </div>
+        <hr />
+        <div class="container">
+          <h3 class="text-info">data.head()</h3>
+          {{ data.tables[0]|safe }}
+        </div>
+        <hr />
+        <div class="container">
+          <h3 class="text-info">data.tail()</h3>
+          {{ data.tables[1]|safe }}
+        </div>
+        <hr />
+        <div class="container">
+          <div class="row">
+            <div class="col-sm text-center border-right border-primary">
+              <h3 class="text-info">Types of attacks and counts</h3>
+              {{ data.label_counts|safe }}
+            </div>
+            <div class="col-sm text-center">
+              <h3 class="text-info">Next steps</h3>
+              <ul class="list-group">
+                <li class="list-group-item list-group-item-light">
+                  Data cleaning
+                </li>
+                <li class="list-group-item list-group-item-warning">
+                  Pre-processing
+                </li>
+                <li class="list-group-item list-group-item-light">
+                  Classification
+                </li>
+                <li class="list-group-item list-group-item-warning">results</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </body>
+</html>
