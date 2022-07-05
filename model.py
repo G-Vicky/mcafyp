@@ -8,6 +8,7 @@ import sys
 import sklearn
 import io
 import random
+import pickle
 
 df_master = pd.DataFrame()
 df_chi = pd.DataFrame()
@@ -18,9 +19,16 @@ selected_feat = 1
 #data exploration
 def read_dataset():
     global df_master
-    df_anomaly_master = pd.read_csv("https://www.kaggle.com/datasets/vickyg0609/mcafyp/CIC_IDS_2018.csv", low_memory=False)
-    df_benign_master = pd.read_csv("https://www.kaggle.com/datasets/vickyg0609/mcafyp/benign.csv", low_memory=False)
+    df_anomaly_master = pd.read_csv("CIC_IDS_2018.csv", low_memory=False)
+    df_benign_master = pd.read_csv("benign.csv", low_memory=False)
     df_master = pd.concat([df_anomaly_master, df_benign_master])
+
+def get_sample_df():
+    global df_master
+    if df_master.empty:
+        read_dataset()
+    # df = pd.read_csv("sample.csv")
+    return df_master.sample(n = 12)
 
 def get_data_shape():
     global df_master
@@ -174,7 +182,65 @@ def classification(c_type, feat_sel, criterion):
         train_acc = round(train_acc, 2)
 
         return (train_acc, test_acc)
+
+def preprocess_test_data(df):
+    df = df.drop(["Timestamp"], axis="columns")
+    for col_name in df.columns:
+        if col_name != "Label":
+            df[col_name] = pd.to_numeric(df[col_name],errors = 'coerce')  
+    df = df.convert_dtypes()
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    df = df.dropna()
+    df.isnull().any()
+    selected_feat = ['Dst Port', 'Flow Duration', 'TotLen Fwd Pkts', 'Fwd Pkt Len Max',
+       'Fwd Pkt Len Mean', 'Bwd Pkt Len Std', 'Flow Byts/s', 'Flow Pkts/s',
+       'Flow IAT Mean', 'Flow IAT Max', 'Flow IAT Min', 'Fwd IAT Tot',
+       'Fwd IAT Mean', 'Fwd IAT Min', 'Fwd Header Len', 'Fwd Pkts/s',
+       'Bwd Pkts/s', 'Fwd Seg Size Avg', 'Subflow Fwd Byts',
+       'Init Fwd Win Byts', 'Init Bwd Win Byts', 'Fwd Seg Size Min']
+    X_data = df[selected_feat] 
+    scalar = pickle.load(open("pickle/scalar_rfi", "rb"))
+    X_data = scalar.transform(X_data)
+    yy = df.iloc[:, -1]
+    return (X_data, yy)        
+
+
+def classify_data(t_data):
+    test = t_data.split(",")
+    df_test = pd.DataFrame([test])
+    df_test.columns = ['Dst Port', 'Protocol', 'Timestamp', 'Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts',
+       'TotLen Fwd Pkts', 'TotLen Bwd Pkts', 'Fwd Pkt Len Max',
+       'Fwd Pkt Len Min', 'Fwd Pkt Len Mean', 'Fwd Pkt Len Std',
+       'Bwd Pkt Len Max', 'Bwd Pkt Len Min', 'Bwd Pkt Len Mean',
+       'Bwd Pkt Len Std', 'Flow Byts/s', 'Flow Pkts/s', 'Flow IAT Mean',
+       'Flow IAT Std', 'Flow IAT Max', 'Flow IAT Min', 'Fwd IAT Tot',
+       'Fwd IAT Mean', 'Fwd IAT Std', 'Fwd IAT Max', 'Fwd IAT Min',
+       'Bwd IAT Tot', 'Bwd IAT Mean', 'Bwd IAT Std', 'Bwd IAT Max',
+       'Bwd IAT Min', 'Fwd PSH Flags', 'Bwd PSH Flags', 'Fwd URG Flags',
+       'Bwd URG Flags', 'Fwd Header Len', 'Bwd Header Len', 'Fwd Pkts/s',
+       'Bwd Pkts/s', 'Pkt Len Min', 'Pkt Len Max', 'Pkt Len Mean',
+       'Pkt Len Std', 'Pkt Len Var', 'FIN Flag Cnt', 'SYN Flag Cnt',
+       'RST Flag Cnt', 'PSH Flag Cnt', 'ACK Flag Cnt', 'URG Flag Cnt',
+       'CWE Flag Count', 'ECE Flag Cnt', 'Down/Up Ratio', 'Pkt Size Avg',
+       'Fwd Seg Size Avg', 'Bwd Seg Size Avg', 'Fwd Byts/b Avg',
+       'Fwd Pkts/b Avg', 'Fwd Blk Rate Avg', 'Bwd Byts/b Avg',
+       'Bwd Pkts/b Avg', 'Bwd Blk Rate Avg', 'Subflow Fwd Pkts',
+       'Subflow Fwd Byts', 'Subflow Bwd Pkts', 'Subflow Bwd Byts',
+       'Init Fwd Win Byts', 'Init Bwd Win Byts', 'Fwd Act Data Pkts',
+       'Fwd Seg Size Min', 'Active Mean', 'Active Std', 'Active Max',
+       'Active Min', 'Idle Mean', 'Idle Std', 'Idle Max', 'Idle Min', 'Label']
+    X_data, yy = preprocess_test_data(df_test)
+    clf_gini_rfi = pickle.load(open("pickle/clf_gini_rfi", "rb"))
+    clf_gini_rfi_multi = pickle.load(open("pickle/clf_gini_rfi_multi", "rb"))
+    b = clf_gini_rfi.predict(X_data)
+    m = clf_gini_rfi_multi.predict(X_data)
+    attack = 1
+    if yy.item().lower() == "Benign".lower():
+        attack = 0
+    return (attack, yy[0], b[0], m[0])
         
+
+
 
 
 '''

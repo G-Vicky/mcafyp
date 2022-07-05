@@ -47,8 +47,28 @@
       rel="stylesheet"
     />
 
-    <title>Decision Tree Classification</title>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <title>Classify</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#sample_df").on("click", "tbody tr", function (event) {
+          var selected_row = "";
+          // alert("clicked");
+          $(this).addClass("highlight").siblings().removeClass("highlight");
+          // console.log(this);
+          $(this)
+            .find("td")
+            .each(function (index, td) {
+              var value = td.innerHTML;
+              selected_row = selected_row + "," + value;
+            });
+          selected_row = selected_row.substring(1);
+          console.log(selected_row);
+          $("textarea#classify").val("");
+          $("textarea#classify").val(selected_row);
+        });
+      });
+    </script>
     <style>
       * {
         font-family: "Roboto";
@@ -60,23 +80,8 @@
         border: none;
         border-collapse: collapse;
       }
-      td {
-        padding: 3px;
-      }
-      th,
-      td {
-        border-bottom: 1px solid #ddd;
-        text-align: center;
-      }
-      tr:nth-child(even) {
-        background-color: #f2f2f2;
-      }
-      td:nth-child(even) {
-        background-color: #f2f2f2;
-      }
-
-      th:nth-child(even) {
-        background-color: #f2f2f2;
+      .table tbody tr.highlight td {
+        background-color: #8ae429;
       }
     </style>
   </head>
@@ -98,7 +103,7 @@
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
+          <!-- <li class="nav-item">
             <a class="nav-link" href="{{ url_for('home') }}"
               >Home <span class="sr-only">(current)</span></a
             >
@@ -154,73 +159,99 @@
               <a class="dropdown-item" href="#">Gini</a>
               <a class="dropdown-item" href="#">Entropy</a>
             </div>
-          </li>
+          </li> -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('classify')}}">Classify</a>
+            <a class="nav-link active" href="{{ url_for('classify')}}"
+              >Classify</a
+            >
           </li>
         </ul>
       </div>
     </nav>
 
-    <!-- Home section -->
+    <br />
+    <!-- main section -->
+
     <div class="container">
-      <br />
-      <div class="container text-center">
-        <div class="col">CIC-IDS-2018</div>
-        <form action="{{ url_for('home') }}" method="post">
-          <input
-            type="submit"
-            class="btn btn-outline-info"
-            value="Load Dataset"
-          />
-        </form>
-      </div>
-      {% if data %}
       <div class="container">
-        <h1 class="text-success font-italic">Data Exploration</h1>
-        <div class="container">
-          <h3 class="text-info">Records in Dataset</h3>
-          <p>
-            Number of rows : {{data.rows}} <br />
-            Number of columns : {{data.cols}}
-          </p>
+        <h1 class="text-center text-primary">Classification</h1>
+      </div>
+      <div class="container">{{ data.sample_df|safe }}</div>
+      <br />
+      <div class="container">
+        <div class="form text-center">
+          <form action="{{ url_for('classify') }}" method="post">
+            <textarea
+              name="classify"
+              cols="30"
+              rows="6"
+              placeholder="paste in csv format"
+              class="w-100"
+              style="resize: none"
+              id="classify"
+            >
+{{data.classify}}</textarea
+            >
+            <br />
+            <input
+              type="submit"
+              class="btn btn-outline-success"
+              value="submit"
+            />
+          </form>
         </div>
-        <hr />
-        <div class="container">
-          <h3 class="text-info">data.head()</h3>
-          {{ data.tables[0]|safe }}
-        </div>
-        <hr />
-        <div class="container">
-          <h3 class="text-info">data.tail()</h3>
-          {{ data.tables[1]|safe }}
-        </div>
-        <hr />
-        <div class="container">
+      </div>
+
+      <hr />
+      <br />
+
+      <div class="container">
+        <h3 class="text-success">Results:</h3>
+        <div class="container text-center w-25">
           <div class="row">
-            <div class="col-sm text-center border-right border-primary">
-              <h3 class="text-info">Types of attacks and counts</h3>
-              {{ data.label_counts|safe }}
+            <div class="col">
+              <b> 0: </b> Normal/Benign
             </div>
-            <div class="col-sm text-center">
-              <h3 class="text-info">Next steps</h3>
-              <ul class="list-group">
-                <li class="list-group-item list-group-item-light">
-                  Data cleaning
-                </li>
-                <li class="list-group-item list-group-item-warning">
-                  Pre-processing
-                </li>
-                <li class="list-group-item list-group-item-light">
-                  Classification
-                </li>
-                <li class="list-group-item list-group-item-warning">results</li>
-              </ul>
+              <div class="col">
+                <b> 1: </b> Attack/Anamoly
+              </div>
+          </div>
+        </div>
+
+      <br/>
+    <br/>
+        <div class="container">
+          <h3 class="text-center text-info">Actual</h3>
+          <div class="container text-center">
+            <div class="row fw-bold">
+              <div class="col col-6">Attack</div>
+              <div class="col col-6">Class</div>
+            </div>
+            <div class="row">
+              <div class="col col-6">{{ data.actual_b }}</div>
+              <div class="col col-6">{{ data.actual_m }}</div>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="container">
+          <h3 class="text-center text-info">Classified</h3>
+          <div class="container text-center">
+            <div class="row">
+              <div class="col col-6">{{ data.pred_b }}</div>
+              <div class="col col-6">{{ data.pred_m }}</div>
             </div>
           </div>
         </div>
       </div>
-      {% endif %}
     </div>
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
   </body>
 </html>

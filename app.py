@@ -1,5 +1,7 @@
 from operator import index
-from flask import Flask, render_template, request
+from random import sample
+from flask import Flask, redirect, render_template, request
+from numpy import not_equal
 from model import *
 
 app = Flask(__name__)
@@ -7,12 +9,10 @@ read_data = False
 preprocess_data = False
 
 @app.route("/", methods=['GET'])
-def index():
-    return "Hello world"
-    
-
 @app.route("/home", methods=['GET', "POST"])
 def home():
+    return redirect("/classify")
+    '''
     global read_data
     data = {}
     if request.method == "POST":
@@ -31,6 +31,7 @@ def home():
         }
         # print(data)    
     return render_template("home.html", data = data)
+    '''
 
 @app.route("/preprocess", methods=['GET', 'POST'])
 def preprocess():
@@ -111,6 +112,25 @@ def decisiontree(type):
 
     print(data)
     return render_template("decisiontree.html", data = data)
+
+@app.route("/classify", methods=['GET', 'POST'])
+def classify():
+    data = {}
+    sample_df = get_sample_df()
+    if request.method == "POST":
+        c = request.form["classify"]
+        a_b, a_m, p_b, p_m = classify_data(c)
+        data = {"classify": c,
+            "actual_b": a_b,
+            "actual_m": a_m,
+            "pred_b"  : p_b,
+            "pred_m"  : p_m
+        }
+    data["sample_df"] = sample_df.to_html(classes="table table-success table-sm table-hover", header="true", table_id = "sample_df")
+        
+    
+    print(data)
+    return render_template("classify.html", data = data)
 
 
 if __name__ == "__main__":
